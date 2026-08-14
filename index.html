@@ -327,7 +327,22 @@ renderCalendar();
 
 }
 
+// Validation: only today and future dates are allowed
 function openModal(date){
+
+const selected=new Date(date + "T00:00:00");
+
+const today=new Date();
+
+today.setHours(0,0,0,0);
+
+if(selected<today){
+
+alert("You can only add events for today or future dates.");
+
+return;
+
+}
 
 selectedDate=date;
 
