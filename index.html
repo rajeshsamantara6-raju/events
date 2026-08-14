@@ -1,306 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IIM Sambalpur Intranet Calendar</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    body{background:#f3f4f6;color:#222}
-    .topbar{
-      height:70px;background:#5b3fd3;color:#fff;display:flex;align-items:center;
-      padding:0 20px;font-size:28px;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,.15)
-    }
-    .topbar img{width:42px;height:42px;margin-right:12px;border-radius:4px;background:#fff;padding:4px}
-    .layout{display:flex;min-height:calc(100vh - 70px)}
-    .sidebar{
-      width:240px;background:#090b5a;color:#fff;padding:20px 0
-    }
-    .sidebar a{
-      display:flex;align-items:center;gap:12px;
-      padding:14px 22px;color:#fff;text-decoration:none;
-      border-left:4px solid transparent;transition:.2s
-    }
-    .sidebar a:hover,.sidebar a.active{
-      background:#6f46d9;border-left-color:#fff
-    }
-    .content{flex:1;padding:26px}
-    .title{
-      text-align:center;font-size:40px;color:#5b3fd3;
-      margin:10px 0 20px;font-weight:500
-    }
-    .line{height:4px;background:#7c4dff;margin:0 auto 24px;width:92%;border-radius:3px}
-    .card{
-      background:#fff;border-radius:16px;padding:20px;
-      box-shadow:0 8px 24px rgba(0,0,0,.08)
-    }
-    .controls{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:16px
-    }
-    .controls button{
-      background:#5b3fd3;color:#fff;border:none;padding:10px 18px;
-      border-radius:8px;cursor:pointer;font-weight:600
-    }
-    .controls button:hover{background:#472db7}
-    #monthYear{font-size:28px;color:#5b3fd3;font-weight:bold}
-    .weekdays{
-      display:grid;grid-template-columns:repeat(7,1fr);
-      background:#6f46d9;color:#fff;border-radius:10px 10px 0 0;overflow:hidden
-    }
-    .weekdays div{
-      padding:14px;text-align:center;font-weight:bold;border-right:1px solid rgba(255,255,255,.25)
-    }
-    .weekdays div:last-child{border-right:none}
-    .days{
-      display:grid;grid-template-columns:repeat(7,1fr);
-      border:1px solid #e5e7eb;border-top:none
-    }
-    .day{
-      min-height:130px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;
-      padding:10px;cursor:pointer;position:relative;background:#fff
-    }
-    .day:nth-child(7n){border-right:none}
-    .day:hover{background:#f8f5ff}
-    .day-number{font-weight:bold;color:#111}
-    .other-month{background:#fafafa;color:#9ca3af}
-    .today{outline:3px solid #5b3fd3;outline-offset:-3px}
-    .event{
-      margin-top:8px;padding:6px 8px;border-radius:6px;
-      background:#d1fae5;color:#065f46;font-size:12px;font-weight:600;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
-    }
-    .modal{
-      position:fixed;inset:0;background:rgba(0,0,0,.5);
-      display:none;align-items:center;justify-content:center;padding:20px
-    }
-    .modal-content{
-      width:420px;max-width:100%;background:#fff;border-radius:14px;
-      padding:22px;box-shadow:0 16px 40px rgba(0,0,0,.2)
-    }
-    .modal-content h3{color:#5b3fd3;margin-bottom:14px}
-    .modal-content label{display:block;margin:10px 0 6px;font-weight:600}
-    .modal-content input,.modal-content textarea{
-      width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px
-    }
-    .modal-actions{
-      display:flex;justify-content:flex-end;gap:10px;margin-top:16px
-    }
-    .btn{border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600}
-    .btn-primary{background:#5b3fd3;color:#fff}
-    .btn-secondary{background:#6b7280;color:#fff}
-    .btn-danger{background:#dc2626;color:#fff}
-    @media (max-width:900px){
-      .layout{flex-direction:column}
-      .sidebar{width:100%}
-      .title{font-size:28px}
-      .day{min-height:100px}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events Calendar</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    padding:20px;
+}
+
+.calendar-container{
+    max-width:1100px;
+    margin:auto;
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.1);
+    overflow:hidden;
+}
+
+.calendar-header{
+    background:#5b3fd3;
+    color:#fff;
+    padding:20px;
+}
+
+.calendar-header h2{
+    text-align:center;
+    font-size:28px;
+}
+
+.controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px;
+}
+
+.controls button{
+    background:#5b3fd3;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.controls button:hover{
+    background:#472db7;
+}
+
+#monthYear{
+    font-size:26px;
+    font-weight:bold;
+    color:#5b3fd3;
+}
+
+.weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    background:#6f46d9;
+    color:#fff;
+}
+
+.weekdays div{
+    padding:15px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+}
+
+.day{
+    border:1px solid #e5e7eb;
+    min-height:120px;
+    padding:10px;
+    cursor:pointer;
+    position:relative;
+}
+
+.day:hover{
+    background:#f3f0ff;
+}
+
+.day-number{
+    font-weight:bold;
+    color:#111827;
+}
+
+.today{
+    border:2px solid #5b3fd3;
+}
+
+.other-month{
+    background:#fafafa;
+    color:#9ca3af;
+}
+
+.event{
+    margin-top:8px;
+    padding:5px 8px;
+    background:#d1fae5;
+    color:#065f46;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.modal-content{
+    background:#fff;
+    width:400px;
+    max-width:100%;
+    border-radius:12px;
+    padding:20px;
+}
+
+.modal-content h3{
+    color:#5b3fd3;
+    margin-bottom:15px;
+}
+
+.modal-content input,
+.modal-content textarea{
+    width:100%;
+    padding:10px;
+    margin-bottom:12px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.btn{
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-primary{
+    background:#5b3fd3;
+    color:#fff;
+}
+
+.btn-secondary{
+    background:#6b7280;
+    color:#fff;
+}
+
+.btn-danger{
+    background:#dc2626;
+    color:#fff;
+}
+</style>
+
 </head>
 <body>
-  <div class="topbar">
-    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/Indian_Institute_of_Management_Sambalpur_Logo.png/120px-Indian_Institute_of_Management_Sambalpur_Logo.png" alt="IIM Logo">
-    IIM Sambalpur Intranet
-  </div>
 
-  <div class="layout">
-    <div class="sidebar">
-      <a href="#"><i class="fas fa-home"></i> Dashboard</a>
-      <a href="#"><i class="fas fa-users"></i> Staff</a>
-      <a href="#"><i class="fas fa-phone"></i> Telephone</a>
-      <a href="#"><i class="fas fa-bell"></i> Circulars</a>
-      <a href="#" class="active"><i class="fas fa-calendar-alt"></i> Events</a>
-      <a href="#"><i class="fas fa-umbrella-beach"></i> Holidays</a>
-      <a href="#"><i class="fas fa-sitemap"></i> Committees</a>
-      <a href="#"><i class="fas fa-file-alt"></i> Forms & Policies</a>
-      <a href="#"><i class="fas fa-download"></i> Software</a>
-      <a href="#"><i class="fas fa-link"></i> Quick Links</a>
-    </div>
+<div class="calendar-container">
 
-    <div class="content">
-      <div class="title">WELCOME TO IIM SAMBALPUR INTRANET PORTAL</div>
-      <div class="line"></div>
+<div class="calendar-header">
+<h2>Events Calendar</h2>
+</div>
 
-      <div class="card">
-        <div class="controls">
-          <button onclick="changeMonth(-1)"><i class="fas fa-angle-left"></i> Prev</button>
-          <div id="monthYear"></div>
-          <button onclick="changeMonth(1)">Next <i class="fas fa-angle-right"></i></button>
-        </div>
+<div class="controls">
+<button onclick="changeMonth(-1)">< Prev</button>
+<div id="monthYear"></div>
+<button onclick="changeMonth(1)">Next ></button>
+</div>
 
-        <div class="weekdays">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-        <div class="days" id="calendarDays"></div>
-      </div>
-    </div>
-  </div>
+<div class="weekdays">
+<div>Sun</div>
+<div>Mon</div>
+<div>Tue</div>
+<div>Wed</div>
+<div>Thu</div>
+<div>Fri</div>
+<div>Sat</div>
+</div>
 
-  <div class="modal" id="eventModal">
-    <div class="modal-content">
-      <h3 id="modalTitle">Add Event</h3>
-      <div id="selectedDateText" style="margin-bottom:10px;color:#555"></div>
+<div class="days" id="calendarDays"></div>
 
-      <label>Event Title</label>
-      <input type="text" id="eventTitle" placeholder="Enter event title">
+</div>
 
-      <label>Description</label>
-      <textarea id="eventDesc" rows="4" placeholder="Enter event description"></textarea>
+<div class="modal" id="eventModal">
 
-      <div class="modal-actions">
-        <button class="btn btn-danger" id="deleteBtn" onclick="deleteEvent()" style="display:none">Delete</button>
-        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
-      </div>
-    </div>
-  </div>
+<div class="modal-content">
+
+<h3 id="modalTitle">Add Event</h3>
+
+<div id="selectedDateText" style="margin-bottom:10px;color:#555;"></div>
+
+<input type="text" id="eventTitle" placeholder="Event title">
+
+<textarea id="eventDesc" rows="4" placeholder="Event description"></textarea>
+
+<div class="modal-actions">
+
+<button class="btn btn-danger" id="deleteBtn" onclick="deleteEvent()" style="display:none;">Delete</button>
+
+<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+
+<button class="btn btn-primary" onclick="saveEvent()">Save</button>
+
+</div>
+
+</div>
+
+</div>
 
 <script>
-let currentDate = new Date();
-let selectedDate = '';
-let editingIndex = -1;
 
-let events = JSON.parse(localStorage.getItem('iimEvents')) || {};
+let currentDate=new Date();
+
+let selectedDate="";
+
+let editingIndex=-1;
+
+let events=JSON.parse(localStorage.getItem("calendarEvents")) || {};
 
 function renderCalendar(){
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
 
-  document.getElementById('monthYear').textContent =
-    currentDate.toLocaleString('default',{month:'long',year:'numeric'});
+const year=currentDate.getFullYear();
 
-  const firstDay = new Date(year,month,1);
-  const lastDay = new Date(year,month+1,0);
-  const prevLastDay = new Date(year,month,0);
+const month=currentDate.getMonth();
 
-  const firstDayIndex = firstDay.getDay();
-  const lastDayIndex = lastDay.getDay();
-  const nextDays = 6 - lastDayIndex;
+document.getElementById("monthYear").textContent=
+currentDate.toLocaleString("default",{month:"long",year:"numeric"});
 
-  const daysContainer = document.getElementById('calendarDays');
-  daysContainer.innerHTML = '';
+const firstDay=new Date(year,month,1);
 
-  for(let x=firstDayIndex; x>0; x--){
-    daysContainer.innerHTML +=
-      '<div class="day other-month"><div class="day-number">' +
-      (prevLastDay.getDate()-x+1) +
-      '</div></div>';
-  }
+const lastDay=new Date(year,month+1,0);
 
-  for(let i=1;i<=lastDay.getDate();i++){
-    const dateKey = year + '-' + String(month+1).padStart(2,'0') + '-' + String(i).padStart(2,'0');
-    const dayEvents = events[dateKey] || [];
+const prevLastDay=new Date(year,month,0);
 
-    let eventHTML = '';
-    dayEvents.forEach((ev,index)=>{
-      eventHTML +=
-        '<div class="event" onclick="event.stopPropagation(); editEvent(\\'' +
-        dateKey + '\\',' + index + ')">' +
-        ev.title +
-        '</div>';
-    });
+const firstDayIndex=firstDay.getDay();
 
-    const today = new Date();
-    const isToday =
-      i===today.getDate() &&
-      month===today.getMonth() &&
-      year===today.getFullYear();
+const lastDayIndex=lastDay.getDay();
 
-    daysContainer.innerHTML +=
-      '<div class="day ' + (isToday ? 'today' : '') +
-      '" onclick="openModal(\\'' + dateKey + '\\')">' +
-      '<div class="day-number">' + i + '</div>' +
-      eventHTML +
-      '</div>';
-  }
+const nextDays=6-lastDayIndex;
 
-  for(let j=1;j<=nextDays;j++){
-    daysContainer.innerHTML +=
-      '<div class="day other-month"><div class="day-number">' +
-      j +
-      '</div></div>';
-  }
+const daysContainer=document.getElementById("calendarDays");
+
+daysContainer.innerHTML="";
+
+for(let x=firstDayIndex;x>0;x--){
+
+daysContainer.innerHTML+=
+`<div class="day other-month"><div class="day-number">${prevLastDay.getDate()-x+1}</div></div>`;
+
+}
+
+for(let i=1;i<=lastDay.getDate();i++){
+
+const dateKey=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+
+const dayEvents=events[dateKey] || [];
+
+let eventHTML="";
+
+dayEvents.forEach((ev,index)=>{
+
+eventHTML+=
+`<div class="event" onclick="event.stopPropagation(); editEvent('${dateKey}',${index})">${ev.title}</div>`;
+
+});
+
+const today=new Date();
+
+const isToday=
+i===today.getDate() &&
+month===today.getMonth() &&
+year===today.getFullYear();
+
+daysContainer.innerHTML+=
+`<div class="day ${isToday ? "today" : ""}" onclick="openModal('${dateKey}')">
+<div class="day-number">${i}</div>
+${eventHTML}
+</div>`;
+
+}
+
+for(let j=1;j<=nextDays;j++){
+
+daysContainer.innerHTML+=
+`<div class="day other-month"><div class="day-number">${j}</div></div>`;
+
+}
+
 }
 
 function changeMonth(step){
-  currentDate.setMonth(currentDate.getMonth()+step);
-  renderCalendar();
+
+currentDate.setMonth(currentDate.getMonth()+step);
+
+renderCalendar();
+
 }
 
 function openModal(date){
-  selectedDate = date;
-  editingIndex = -1;
 
-  document.getElementById('modalTitle').textContent = 'Add Event';
-  document.getElementById('selectedDateText').textContent = 'Date: ' + date;
-  document.getElementById('eventTitle').value = '';
-  document.getElementById('eventDesc').value = '';
-  document.getElementById('deleteBtn').style.display = 'none';
-  document.getElementById('eventModal').style.display = 'flex';
+selectedDate=date;
+
+editingIndex=-1;
+
+document.getElementById("modalTitle").textContent="Add Event";
+
+document.getElementById("selectedDateText").textContent="Date: " + date;
+
+document.getElementById("eventTitle").value="";
+
+document.getElementById("eventDesc").value="";
+
+document.getElementById("deleteBtn").style.display="none";
+
+document.getElementById("eventModal").style.display="flex";
+
 }
 
 function editEvent(date,index){
-  selectedDate = date;
-  editingIndex = index;
 
-  const ev = events[date][index];
+selectedDate=date;
 
-  document.getElementById('modalTitle').textContent = 'Edit Event';
-  document.getElementById('selectedDateText').textContent = 'Date: ' + date;
-  document.getElementById('eventTitle').value = ev.title;
-  document.getElementById('eventDesc').value = ev.desc;
-  document.getElementById('deleteBtn').style.display = 'inline-block';
-  document.getElementById('eventModal').style.display = 'flex';
+editingIndex=index;
+
+const ev=events[date][index];
+
+document.getElementById("modalTitle").textContent="Edit Event";
+
+document.getElementById("selectedDateText").textContent="Date: " + date;
+
+document.getElementById("eventTitle").value=ev.title;
+
+document.getElementById("eventDesc").value=ev.desc;
+
+document.getElementById("deleteBtn").style.display="inline-block";
+
+document.getElementById("eventModal").style.display="flex";
+
 }
 
 function closeModal(){
-  document.getElementById('eventModal').style.display = 'none';
+
+document.getElementById("eventModal").style.display="none";
+
 }
 
 function saveEvent(){
-  const title = document.getElementById('eventTitle').value.trim();
-  const desc = document.getElementById('eventDesc').value.trim();
 
-  if(!title){
-    alert('Please enter an event title');
-    return;
-  }
+const title=document.getElementById("eventTitle").value.trim();
 
-  if(!events[selectedDate]) events[selectedDate] = [];
+const desc=document.getElementById("eventDesc").value.trim();
 
-  if(editingIndex===-1){
-    events[selectedDate].push({title,desc});
-  }else{
-    events[selectedDate][editingIndex] = {title,desc};
-  }
+if(!title){
 
-  localStorage.setItem('iimEvents',JSON.stringify(events));
-  closeModal();
-  renderCalendar();
+alert("Please enter an event title");
+
+return;
+
+}
+
+if(!events[selectedDate]) events[selectedDate]=[];
+
+if(editingIndex===-1){
+
+events[selectedDate].push({title,desc});
+
+}else{
+
+events[selectedDate][editingIndex]={title,desc};
+
+}
+
+localStorage.setItem("calendarEvents",JSON.stringify(events));
+
+closeModal();
+
+renderCalendar();
+
 }
 
 function deleteEvent(){
-  events[selectedDate].splice(editingIndex,1);
 
-  if(events[selectedDate].length===0){
-    delete events[selectedDate];
-  }
+events[selectedDate].splice(editingIndex,1);
 
-  localStorage.setItem('iimEvents',JSON.stringify(events));
-  closeModal();
-  renderCalendar();
+if(events[selectedDate].length===0){
+
+delete events[selectedDate];
+
 }
 
-window.onclick = function(e){
-  const modal = document.getElementById('eventModal');
-  if(e.target===modal){
-    closeModal();
-  }
-}
+localStorage.setItem("calendarEvents",JSON.stringify(events));
+
+closeModal();
 
 renderCalendar();
+
+}
+
+window.onclick=function(e){
+
+const modal=document.getElementById("eventModal");
+
+if(e.target===modal){
+
+closeModal();
+
+}
+
+};
+
+renderCalendar();
+
 </script>
+
 </body>
 </html>
