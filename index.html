@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIM Sambalpur Calendar</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f5f5f5;
+    padding:20px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.header{
+    background:#5b3fd3;
+    color:white;
+    padding:20px;
+    border-radius:12px 12px 0 0;
+}
+
+.header h1{
+    text-align:center;
+}
+
+.calendar-card{
+    background:white;
+    border-radius:0 0 12px 12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    padding:20px;
+}
+
+.controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.controls button{
+    background:#5b3fd3;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.controls button:hover{
+    background:#472db7;
+}
+
+#monthYear{
+    font-size:24px;
+    font-weight:bold;
+    color:#5b3fd3;
+}
+
+.weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    background:#6f46d9;
+    color:white;
+}
+
+.weekdays div{
+    padding:15px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+}
+
+.day{
+    border:1px solid #e5e7eb;
+    min-height:120px;
+    padding:10px;
+    cursor:pointer;
+    position:relative;
+    background:white;
+}
+
+.day:hover{
+    background:#f3f0ff;
+}
+
+.day-number{
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.event{
+    background:#c8f7d1;
+    color:#14532d;
+    padding:4px 6px;
+    border-radius:4px;
+    margin-bottom:4px;
+    font-size:12px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.today{
+    border:2px solid #5b3fd3;
+}
+
+.other-month{
+    background:#fafafa;
+    color:#aaa;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:white;
+    padding:24px;
+    border-radius:10px;
+    width:400px;
+}
+
+.modal-content h3{
+    color:#5b3fd3;
+    margin-bottom:16px;
+}
+
+.modal-content input,
+.modal-content textarea{
+    width:100%;
+    padding:10px;
+    margin-bottom:12px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.save-btn{
+    background:#5b3fd3;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+}
+
+.cancel-btn{
+    background:#6b7280;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+}
+
+.delete-btn{
+    background:#dc2626;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>IIM Sambalpur Events Calendar</h1>
+</div>
+
+<div class="calendar-card">
+
+<div class="controls">
+<button onclick="changeMonth(-1)">Prev</button>
+<div id="monthYear"></div>
+<button onclick="changeMonth(1)">Next</button>
+</div>
+
+<div class="weekdays">
+<div>Sun</div>
+<div>Mon</div>
+<div>Tue</div>
+<div>Wed</div>
+<div>Thu</div>
+<div>Fri</div>
+<div>Sat</div>
+</div>
+
+<div class="days" id="calendarDays"></div>
+
+</div>
+</div>
+
+<div class="modal" id="eventModal">
+
+<div class="modal-content">
+
+<h3 id="modalTitle">Add Event</h3>
+
+<input type="text" id="eventTitle" placeholder="Event title">
+
+<textarea id="eventDesc" rows="4" placeholder="Event description"></textarea>
+
+<div class="modal-actions">
+
+<button class="delete-btn" id="deleteBtn" onclick="deleteEvent()">Delete</button>
+
+<button class="cancel-btn" onclick="closeModal()">Cancel</button>
+
+<button class="save-btn" onclick="saveEvent()">Save</button>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let currentDate=new Date();
+
+let selectedDate="";
+
+let editingIndex=-1;
+
+let events=JSON.parse(localStorage.getItem("iimEvents")) || {};
+
+function renderCalendar(){
+
+const year=currentDate.getFullYear();
+
+const month=currentDate.getMonth();
+
+document.getElementById("monthYear").textContent=
+currentDate.toLocaleString("default",{month:"long",year:"numeric"});
+
+const firstDay=new Date(year,month,1);
+
+const lastDay=new Date(year,month+1,0);
+
+const prevLastDay=new Date(year,month,0);
+
+const firstDayIndex=firstDay.getDay();
+
+const lastDayIndex=lastDay.getDay();
+
+const nextDays=6-lastDayIndex;
+
+const daysContainer=document.getElementById("calendarDays");
+
+daysContainer.innerHTML="";
+
+for(let x=firstDayIndex;x>0;x--){
+
+daysContainer.innerHTML+=
+`<div class="day other-month"><div class="day-number">${prevLastDay.getDate()-x+1}</div></div>`;
+
+}
+
+for(let i=1;i<=lastDay.getDate();i++){
+
+const dateKey=`${year}-${month+1}-${i}`;
+
+const dayEvents=events[dateKey] || [];
+
+let eventHTML="";
+
+dayEvents.forEach((ev,index)=>{
+
+eventHTML+=
+`<div class="event" onclick="event.stopPropagation(); editEvent('${dateKey}',${index})">${ev.title}</div>`;
+
+});
+
+const today=new Date();
+
+const isToday=
+i===today.getDate() &&
+month===today.getMonth() &&
+year===today.getFullYear();
+
+daysContainer.innerHTML+=
+`<div class="day ${isToday ? 'today' : ''}" onclick="openModal('${dateKey}')">
+<div class="day-number">${i}</div>
+${eventHTML}
+</div>`;
+
+}
+
+for(let j=1;j<=nextDays;j++){
+
+daysContainer.innerHTML+=
+`<div class="day other-month"><div class="day-number">${j}</div></div>`;
+
+}
+
+}
+
+function changeMonth(step){
+
+currentDate.setMonth(currentDate.getMonth()+step);
+
+renderCalendar();
+
+}
+
+function openModal(date){
+
+selectedDate=date;
+
+editingIndex=-1;
+
+document.getElementById("modalTitle").textContent="Add Event";
+
+document.getElementById("eventTitle").value="";
+
+document.getElementById("eventDesc").value="";
+
+document.getElementById("deleteBtn").style.display="none";
+
+document.getElementById("eventModal").style.display="flex";
+
+}
+
+function editEvent(date,index){
+
+selectedDate=date;
+
+editingIndex=index;
+
+const ev=events[date][index];
+
+document.getElementById("modalTitle").textContent="Edit Event";
+
+document.getElementById("eventTitle").value=ev.title;
+
+document.getElementById("eventDesc").value=ev.desc;
+
+document.getElementById("deleteBtn").style.display="inline-block";
+
+document.getElementById("eventModal").style.display="flex";
+
+}
+
+function closeModal(){
+
+document.getElementById("eventModal").style.display="none";
+
+}
+
+function saveEvent(){
+
+const title=document.getElementById("eventTitle").value.trim();
+
+const desc=document.getElementById("eventDesc").value.trim();
+
+if(!title){
+
+alert("Enter event title");
+
+return;
+
+}
+
+if(!events[selectedDate]) events[selectedDate]=[];
+
+if(editingIndex===-1){
+
+events[selectedDate].push({title,desc});
+
+}else{
+
+events[selectedDate][editingIndex]={title,desc};
+
+}
+
+localStorage.setItem("iimEvents",JSON.stringify(events));
+
+closeModal();
+
+renderCalendar();
+
+}
+
+function deleteEvent(){
+
+events[selectedDate].splice(editingIndex,1);
+
+if(events[selectedDate].length===0) delete events[selectedDate];
+
+localStorage.setItem("iimEvents",JSON.stringify(events));
+
+closeModal();
+
+renderCalendar();
+
+}
+
+window.onclick=function(e){
+
+const modal=document.getElementById("eventModal");
+
+if(e.target===modal) closeModal();
+
+};
+
+renderCalendar();
+
+</script>
+
+</body>
+</html>
